@@ -164,8 +164,48 @@ int main()
 
 	for (int i = 0; i < m; i++) delete[] energy_matrix[i];
 	delete[] energy_matrix;
-*/
+*/ 
 
+	//task 2
+	using namespace std;
+	const int R = 5;
+	int sum[R] = { 0 };// Массив Суммы
+	//созадание двухмерного массива
+	int** a = new int* [R];
+	for (int i = 0; i < R; i++)
+		a[i] = new int[R];
+	//Нахождение валентности и связи узлов
+	for (int i = 0; i < R; i++)
+		for (int j = 0; j < R; j++)
+		{
+			if (a[i][j] = 1) a[i][j] = -1;
+			sum[i] += abs(a[i][j]);
+		}
+	for (int i = 0; i < R; i++)
+		for (int j = 0; j < R; j++)
+			if (i == j) a[i][j] = sum[i]-1;
+	//вывод матрицы Киргофа
+	cout << "Матрица Киргофа:";
+	cout << "\n";
+	for (int i = 0; i < R; ++i) {
+		for (int j = 0; j < R; ++j) {
+			cout << setw(6) << a[i][j];
+		}
+		cout << "\n";
+	}
+
+
+//вычисление вероятности валентности узлов 
+	double P[R];
+	for (int i = 0; i < R; i++)
+	{
+		P[i] = static_cast<double>(4) / R;
+	}
+	cout << "Вероятности валентности:";
+	for (int i = 0; i < R; i++)
+		cout << P[i] << " ";
+
+ 
 
 
 	return 0;
