@@ -3,13 +3,24 @@
 #include <cmath>
 #include <vector>
 #include <clocale>
-
+#include <map>
 
 //task_3
 // структура для описания матрицы
 struct Matrix {
 	int m; // размерность
 	std::vector <std::vector<long double>> mtx; // матрица
+};
+
+// тестовая входная матрица
+Matrix m_1 = { 8, { {0, 0, 0, 0, 0, 0, 0, 0},
+						{0, 0, 0, 11.1, 0, 0, 0, 0},
+						{0, 0, 0, 0, 11.5, 0, 0, 0},
+						{0, 11.1, 0, 0, 0, 0, 0, 0},
+						{0, 0, 11.5, 0, 0, 0, 0, 0},
+						{0, 0, 0, 0, 0, 0, 11.5, 0},
+						{0, 0, 0, 0, 0, 11.5, 0, 0},
+						{0, 0, 0, 0, 0, 0, 0, 0} }
 };
 
 // перегрузка оператора вывода для матриц
@@ -23,7 +34,27 @@ std::ostream& operator << (std::ostream& out, const Matrix& a) {
 	return out;
 }
 
+// функция поиска минимума и максимума матрицы
+// .first - минимум, .second - максимум
+std::pair <long double, long double> min_max(const Matrix& a) {
+	long double min = a.mtx[0][0];
+	long double max = min;
+	for (int i = 0; i < a.m; ++i) {
+		for (int j = 0; j < a.m; ++j) {
+			if (min > a.mtx[i][j]) {
+				min = a.mtx[i][j];
+			}
+			if (max < a.mtx[i][j]) {
+				max = a.mtx[i][j];
+			}
+		}
+	}
 
+	return std::make_pair(min, max);
+}
+
+
+// создание матрицы энергии при получении двумерного динамического массива
 /*
 double** create_energy_matrix(double** matrix_v_2, const int m) {
 	double** energy_matrix = new double* [m];
@@ -48,13 +79,14 @@ double** create_energy_matrix(double** matrix_v_2, const int m) {
 
 // функция для построения матрицы энергий
 Matrix create_energy_matrix(const Matrix& mtrx) {
-	std::vector <std::vector<long double>> energy_matrix;
-
+	std::vector <std::vector<long double>> energy_matrix; // результирующая матрица энергий
+	auto mtx_min_max = min_max(mtrx);
+	// std::cout << "min and max: " << mtx_min_max.first << " " << mtx_min_max.second << "\n";
 	for (int i = 0; i < mtrx.m; ++i) {
 		std::vector <long double> line_of_matrix = {};
 		for (int j = 0; j < mtrx.m; ++j) {
-			double d = mtrx.mtx[i][j];
-			if (d == 0)
+			double d = mtrx.mtx[i][j] / ((mtx_min_max.first + mtx_min_max.second) / 2);
+			if (mtrx.mtx[i][j] == 0)
 				line_of_matrix.push_back(0);
 			else {
 				line_of_matrix.push_back(round((1 / pow(d, 12) - 1 / pow(d, 6)) * 100) / 100);
@@ -68,16 +100,63 @@ Matrix create_energy_matrix(const Matrix& mtrx) {
 }
 
 // функция для вычисления вероятнсти матрицы энергий
-double probability_energy(const Matrix& mtrx) {
-	double pairs = 0;
+// vector <int> res = {28, 0,     0, 0, 0, 0, ....., 0,    0, 0, ..., 2   }
+//		значения:	  {0,  0.115, .........0.46,..., 11.145, ........., 11.5}
+//		матрица:	  {0,  0,                 0,    ,11.1,          ,   11.5}
+//		индексы:	  {0,  1,     2, 3, 4, 5, ..., 89,  .........., 100 }
+
+std::map <long double, long double> probability_energy(const Matrix& mtrx) {
+	std::map <long double, long double> probability; // вероятность
+	std::vector <long double> steps; // шаги
+	std::vector <long double> tmp_mtrx; // вспомогательная матрица
+	auto mtx_min_max = min_max(mtrx);
+	//std::cout << "min and max: " << mtx_min_max.first << " " << mtx_min_max.second << "\n";
+
+	// заполнение вспомогательной матрицы
 	for (int i = 0; i < mtrx.m; ++i) {
 		for (int j = i; j < mtrx.m; ++j) {
-			if (mtrx.mtx[i][j])
-				++pairs;
+			tmp_mtrx.push_back(mtrx.mtx[i][j]);
 		}
 	}
-	// std::cout << pairs << "\n"; // кол-во пар
-	return pairs/mtrx.m;
+
+	//вычисление шага
+	long double step = (mtx_min_max.second + mtx_min_max.first) / tmp_mtrx.size();
+
+	double start = step; // начальное значения для шагового вектора
+	for (int i = 0; i < tmp_mtrx.size(); ++i) {
+		steps.push_back(start);
+		start += step;
+	}
+	//for (const auto x : steps) std::cout << x << " ";
+	//std::cout << "\n";
+
+
+	for (int i = 0; i < tmp_mtrx.size(); ++i) {
+		if (!tmp_mtrx[i]) {
+			steps[i] = 0;
+		}
+		else {
+			steps[i] = round(tmp_mtrx[i] / steps[i] );
+		}
+	}
+	///*
+	std::cout << "\n";
+	for (const auto x : steps) std::cout << x << " ";
+	std::cout << "\n";
+	for (const auto x : tmp_mtrx) std::cout << x << " ";
+	std::cout << "\n";
+	std::cout << "\n\n" << steps.size() << "   " << tmp_mtrx.size() << "\n";
+	//*/
+	// вычисление вероятности
+	for (int i = 0; i < tmp_mtrx.size(); ++i) {
+		if (tmp_mtrx[i])
+			probability.insert({ tmp_mtrx[i], tmp_mtrx[i] / steps[i] });
+			//std::cout << tmp_mtrx[i] << "   " << steps[i] / tmp_mtrx[i] << "\n";
+		else
+			continue;
+	}
+
+	return probability;
 }
 
 
@@ -92,17 +171,6 @@ int main()
 
 
 //task_3	
-	// входная матрица
-	Matrix m_1 = { 8, { {0, 0, 0, 0, 0, 0, 0, 0},
-						{0, 0, 0, 11.1, 0, 0, 0, 0},
-						{0, 0, 0, 0, 11.5, 0, 0, 0},
-						{0, 11.1, 0, 0, 0, 0, 0, 0},
-						{0, 0, 11.5, 0, 0, 0, 0, 0},
-						{0, 0, 0, 0, 0, 0, 11.5, 0},
-						{0, 0, 0, 0, 0, 11.5, 0, 0},
-						{0, 0, 0, 0, 0, 0, 0, 0} }
-	};
-
 	// вывод входной матрицы
 	std::cout << "Входная матрица:\n";
 	std::cout << m_1 << "\n";
@@ -115,9 +183,9 @@ int main()
 	std::cout << m_1_energy << "\n";
 
 	// вероятность матрицы энергий
-	double m_1_probability = probability_energy(m_1);
+	std::map <long double, long double> m_1_probability = probability_energy(m_1_energy);
 	std::cout << "Вероятность матрицы энергий:\n";
-	std::cout << m_1_probability << "\n";
+	for (auto const x : m_1_probability) std::cout << x.first << "	" << x.second << "\n";
 
 
 
