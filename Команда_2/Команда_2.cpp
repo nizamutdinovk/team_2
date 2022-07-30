@@ -4,6 +4,10 @@
 #include <vector>
 #include <clocale>
 #include <map>
+#include <fstream>
+#include <list>
+#include <string>
+#include <math.h>
 
 //task_3
 // структура для описания матрицы
@@ -111,8 +115,44 @@ int main()
 {
 	setlocale(LC_CTYPE, "rus");
     std::cout << "Практическая работа №2, команда 2.\n\n";
+/*
+	for (int i = 12; i < 303; i += 12) { //10+2
+		ifstream fin("data- (" + to_string(i) + ").txt");
+		ofstream fout("out" + to_string(i) + ".XML");
 
+		if (fin.fail())
+			cout << "File " + to_string(i) + " doesn't exist";
 
+		string trash;
+		getline(fin, trash);
+		trash = "";
+
+		list <vector<double>> dataset;
+		while (!fin.eof()) {
+			vector <double> data;
+			for (int i = 0; i < 8; ++i) {
+				double x = 0;
+				fin >> x;
+				if (i == 4 || i > 5)
+					continue;
+				else {
+					data.push_back(x);
+				}
+				x = 0;
+			}
+			dataset.push_back(data);
+		}
+		dataset.pop_back();
+		cout << "File " + to_string(i) + " read" << "\n";
+
+		double Dmax = 0;
+		cout << "Dmax=";
+		cin >> Dmax;
+
+		double Dmin = 0;
+		cout << "Dmin=: ";
+		cin >> Dmin;
+/*
 
 
 
@@ -167,42 +207,60 @@ int main()
 
 //task 2
 	using namespace std;
-	const int R = 5;
-	int sum[R] = { 0 };// Массив Суммы
-	//созадание двухмерного массива
-	int** a = new int* [R];
-	for (int i = 0; i < R; i++)
-		a[i] = new int[R];
+	Matrix	a = { 8, { {0, 0, 0, 0, 1,0,0,0},
+						{0, 0, 0, 0, 0, 0, 0, 0},
+						{0, 1, 0, 0, 0 ,0, 0, 0},
+						{0, 1, 0, 0, 1, 0, 1, 0},
+						{0, 0, 0, 0, 0, 1, 0, 1},
+						{0, 0, 0, 0, 0 , 0, 0, 1},
+						{0, 0, 0, 1, 0, 0, 0, 1},
+						{0, 0, 0, 0, 0, 0, 1, 0}}
+	};
 	//Нахождение валентности и связи узлов
-	for (int i = 0; i < R; i++)
-		for (int j = 0; j < R; j++)
+	int c = 0;
+	for (int i = 0; i < a.m; i++)
+	{
+
+		for (int j = 0; j < a.m; j++)
 		{
-			if (a[i][j] = 1) a[i][j] = -1;
-			sum[i] += abs(a[i][j]);
+			if (a.mtx[i][j] == 1)
+			{
+				c++;
+				a.mtx[i][j] = -1;
+			}
+
 		}
-	for (int i = 0; i < R; i++)
-		for (int j = 0; j < R; j++)
-			if (i == j) a[i][j] = sum[i]-1;
+		a.mtx[i][i] = c;
+		c = 0;
+	}
 	//вывод матрицы Киргофа
 	cout << "Матрица Киргофа:";
 	cout << "\n";
-	for (int i = 0; i < R; ++i) {
-		for (int j = 0; j < R; ++j) {
-			cout << setw(6) << a[i][j];
+	for (int i = 0; i < a.m; ++i) {
+		for (int j = 0; j < a.m; ++j) {
+			cout << setw(6) << a.mtx[i][j];
 		}
 		cout << "\n";
 	}
 
 
 //вычисление вероятности валентности узлов 
-	double P[R];
-	for (int i = 0; i < R; i++)
+	map<double, double> P;
+	c = 0;
+	for (int i = 0; i < a.m; i++)
 	{
-		P[i] = static_cast<double>(4) / R;
+		for (int j = 0; j < a.m; j++)
+		{
+			if (a.mtx[j][i] == a.mtx[j][j])
+				c++;
+		}
+		P[a.mtx[i][i]] = c;
 	}
-	cout << "Вероятности валентности:";
-	for (int i = 0; i < R; i++)
-		cout << P[i] << " ";
+	cout << "Вероятности валентности узлов:" << "\n";
+	for (auto it = P.begin(); it != P.end(); ++it) {
+		double g = it->second;
+		cout << it->first << " " << g / a.m << "\n";
+	}
 
  
 
@@ -214,6 +272,116 @@ int main()
 
 	for (int i = 0; i < size; i++) delete[] energy_mtrx[i];
 	delete[] energy_mtrx;
+// Вывод в xml
+/*
+	int count = 0;
+	for (int i = 0; i < size; ++i) {
+		for (int j = 0; j < size; ++j)
+			if (a[i][j] == 1) 
+			{
+				++count;
+				a[i][j] = -1;
+			}
+		a[i][i] = count;
+		count = 0;
+	}
 
+	fout << "Матрица Киргофа" << "\n";
+	for (int i = 0; i < size; ++i) 
+	{
+		for (int j = 0; j < size; ++j)
+			fout << a[i][j] << " ";
+		fout << "\n";
+	}
+
+	cout << "Конец матрицы Киргофа" << "\n";
+
+	map <int, int> P;
+	count = 0;
+	for (int i = 0; i < size; ++i) 
+	{
+		for (int j = 0; j < size; ++j) 
+		{
+			if (a[j][i] == a[j][j])
+				++count;
+		}
+		P[a[i][i]] = count;
+	}
+
+	fout << "Вероятность валентности узлов" << "\n";
+	for (auto it_m = P.begin(); it_m != P.end(); ++it_m) 
+	{
+		double c = it_m->second;
+		fout << it_m->first << " " << a / size << "\n";
+	}
+	fout << "\n";
+
+	cout << "Конец вероятности валентности узлов" << "\n";
+
+	fout << "Матрица энергий" << "\n";
+	double** m_1_energy = new double* [size];
+	for (int i = 0; i < size; ++i)
+		m_1_energy[i] = new double[size];
+
+	for (int i = 0; i < size; ++i) 
+	{
+		for (int j = 0; j < size; ++j) 
+		{
+			double d = energy_mtrx[i][j] / ((Dmax + Dmin) / 2);
+			if (energy_mtrx[i][j])
+				m_1_energy[i][j] = ((1 / pow(d, 12)) - ((1 / pow(d, 6))));
+			else
+				m_1_energy[i][j] = 0;
+		}
+	}
+
+	//cout << size << "\n";
+	for (int i = 0; i < size; ++i) 
+	{
+		for (int j = 0; j < size; ++j)
+			fout << fixed << setprecision(2) << m_1_energy[i][j] << " ";
+		fout << "\n";
+	}
+
+	cout << "Конец матрицы энергий" << "\n";
+
+	fout << "Распределение вероятностей энергии" << "\n";
+	map <double, double> m_en;
+	count = 0;
+	for (int i = 0; i < size; ++i) 
+	{
+		for (int j = 0; j < size; ++j) 
+		{
+			++m_en[m_1_energy[i][j]];
+		}
+	}
+
+	for (auto it_m = m_en.begin(); it_m != m_en.end(); ++it_m) 
+	{
+		double c = it_m->second;
+		fout << it_m->first << " " << a / size << "\n";
+	}
+	cout << "Конец распределения вероятностей энергии" << "\n";
+
+	cout << "File " + to_string(i) << " completed" << "\n";
+	cout << "\n";
+
+	dataset.clear();
+	m_en.clear();
+	P.clear();
+	for (int i = 0; i < size; ++i) 
+	{
+		delete[] energy_mtrx[i];
+		delete[] a[i];
+		delete[] m_1_energy[i];
+	}
+	delete[] energy_mtrx;
+	delete[] a;
+	delete[] m_1_energy;
+	fin.close();
+	fout.close();
+	}
+	*/
+	cout << "End";
 	return 0;
 }
