@@ -236,42 +236,60 @@ int main()
 
 	//task 2
 	using namespace std;
-	const int R = 5;
-	int sum[R] = { 0 };// Массив Суммы
-	//созадание двухмерного массива
-	int** a = new int* [R];
-	for (int i = 0; i < R; i++)
-		a[i] = new int[R];
+	Matrix	a = { 8, { {0, 0, 0, 0, 1,0,0,0},
+						{0, 0, 0, 0, 0, 0, 0, 0},
+						{0, 1, 0, 0, 0 ,0, 0, 0},
+						{0, 1, 0, 0, 1, 0, 1, 0},
+						{0, 0, 0, 0, 0, 1, 0, 1},
+						{0, 0, 0, 0, 0 , 0, 0, 1},
+						{0, 0, 0, 1, 0, 0, 0, 1},
+						{0, 0, 0, 0, 0, 0, 1, 0}}
+	};
 	//Нахождение валентности и связи узлов
-	for (int i = 0; i < R; i++)
-		for (int j = 0; j < R; j++)
+	int c = 0;
+	for (int i = 0; i < a.m; i++)
+	{
+
+		for (int j = 0; j < a.m; j++)
 		{
-			if (a[i][j] = 1) a[i][j] = -1;
-			sum[i] += abs(a[i][j]);
+			if (a.mtx[i][j] == 1)
+			{
+				c++;
+				a.mtx[i][j] = -1;
+			}
+
 		}
-	for (int i = 0; i < R; i++)
-		for (int j = 0; j < R; j++)
-			if (i == j) a[i][j] = sum[i]-1;
+		a.mtx[i][i] = c;
+		c = 0;
+	}
 	//вывод матрицы Киргофа
 	cout << "Матрица Киргофа:";
 	cout << "\n";
-	for (int i = 0; i < R; ++i) {
-		for (int j = 0; j < R; ++j) {
-			cout << setw(6) << a[i][j];
+	for (int i = 0; i < a.m; ++i) {
+		for (int j = 0; j < a.m; ++j) {
+			cout << setw(6) << a.mtx[i][j];
 		}
 		cout << "\n";
 	}
 
 
 //вычисление вероятности валентности узлов 
-	double P[R];
-	for (int i = 0; i < R; i++)
+	map<double, double> P;
+	c = 0;
+	for (int i = 0; i < a.m; i++)
 	{
-		P[i] = static_cast<double>(4) / R;
+		for (int j = 0; j < a.m; j++)
+		{
+			if (a.mtx[j][i] == a.mtx[j][j])
+				c++;
+		}
+		P[a.mtx[i][i]] = c;
 	}
-	cout << "Вероятности валентности:";
-	for (int i = 0; i < R; i++)
-		cout << P[i] << " ";
+	cout << "Вероятности валентности узлов:" << "\n";
+	for (auto it = P.begin(); it != P.end(); ++it) {
+		double g = it->second;
+		cout << it->first << " " << g / a.m << "\n";
+	}
 
  
 
