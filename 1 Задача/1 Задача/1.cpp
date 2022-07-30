@@ -57,7 +57,7 @@ vector<Point> SelectionByAR(const vector<Point>& points) {
     }
     return result_points;
 }
-//
+//Функция нахождения дистанций между точек
 double CalcDist(const Point& p1, const Point& p2) {
     return sqrt(pow(p1.XM - p2.XM, 2) + pow(p1.YM - p2.YM, 2));
 }
